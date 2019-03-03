@@ -1,0 +1,8 @@
+<gkd-board-game-form (addBoardGame)="addBoardGame($event)">
+</gkd-board-game-form>
+
+<gkd-board-games-list
+  [boardGames$]="boardGames$"
+  (removeBoardGame)="removeBoardGame($event)"
+>
+</gkd-board-games-list>

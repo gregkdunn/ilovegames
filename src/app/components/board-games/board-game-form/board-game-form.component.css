@@ -1,0 +1,10 @@
+.board-game__form {
+  float: right;
+  height: 400px;
+  width: 270px;
+  margin: 12px;
+}
+.board-game__field {
+  display: block;
+  margin: 6px;
+}

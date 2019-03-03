@@ -1,0 +1,52 @@
+<mat-card class="board-game__form">
+  <mat-card-header>
+    <h3>Add a Game</h3>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="boardGameForm">
+      <mat-form-field class="board-game__field">
+        <input
+          matInput
+          placeholder="Name"
+          name="board-game-name"
+          formControlName="boardGameName"
+        />
+      </mat-form-field>
+      <mat-form-field class="board-game__field">
+        <textarea
+          matInput
+          placeholder="Description"
+          name="board-game-description"
+          formControlName="boardGameDescription"
+        ></textarea>
+      </mat-form-field>
+      <mat-form-field class="board-game__field">
+        <input
+          matInput
+          placeholder="Image"
+          name="board-game-image"
+          formControlName="boardGameImage"
+        />
+      </mat-form-field>
+      <mat-form-field class="board-game__field">
+        <mat-select placeholder="Rating" formControlName="boardGameRating">
+          <mat-option value="10">10</mat-option>
+          <mat-option value="9">9</mat-option>
+          <mat-option value="8">8</mat-option>
+          <mat-option value="7">7</mat-option>
+          <mat-option value="6">6</mat-option>
+          <mat-option value="5">5</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+  </mat-card-content>
+  <mat-card-actions>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="this.handleAddClick($event)"
+    >
+      Add
+    </button>
+  </mat-card-actions>
+</mat-card>

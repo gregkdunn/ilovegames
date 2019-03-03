@@ -1,0 +1,8 @@
+<div class="board-game__item" *ngIf="boardGame">
+  <h3 matBadge="{{ boardGame.rating }}" matBadgeSize="large">{{ boardGame.name }}</h3>
+  <img src="{{ boardGame.image}}" />
+  <p>{{ boardGame.description }}</p>
+  <button mat-button type="button" class="btn btn__ok" (click)="this.handleRemoveClick($event)">
+    Remove
+  </button>
+</div>

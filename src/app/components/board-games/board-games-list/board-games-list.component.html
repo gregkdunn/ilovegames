@@ -1,0 +1,11 @@
+<div class="gift-cards__list">
+  <div
+    *ngIf="!((boardGames$ | async)?.length)">
+    No Board Games.
+  </div>
+  <gkd-board-game-list-item
+    *ngFor="let boardGame of (boardGames$ | async)"
+    [boardGame]="boardGame"
+    (removeBoardGame)="this.handleRemoveClick($event)">
+  </gkd-board-game-list-item>
+</div>

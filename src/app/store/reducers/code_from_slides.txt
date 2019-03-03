@@ -1,0 +1,343 @@
+
+const IBoardGameState: IBoardGameState {
+  inventory: [
+      {id: 1, name: 'Azul', rating: 9},
+      {id: 2, name: 'Monopoly', rating:5},
+      {id: 3, name: 'Pandemic', rating: 8},
+      {id: 4, name: 'Settlers of Catan', rating: 7}
+  ],
+  loaded: true,
+  updating: false
+};
+		
+const IVideoGameState: IVideoGameState {
+  inventory: [
+    {id: 1, name: 'Mario Kart', rating: 9},
+    {id: 2, name: 'Zelda', rating: 10},
+    {id: 3, name: 'Donkey Kong', rating: 7}
+  ],
+  loaded: true,
+  updating: false
+};
+
+
+
+export interface IRootState {
+  boardGames: IBoardGameState,
+  videoGames: IVideoGameState
+}  
+
+const rootReducer: IRootState {
+  boardGames: IBoardGameState,
+  videoGames: IVideoGameState
+}
+
+-------
+
+{ 
+  type: ADD_BOARDGAME, 
+  payload:
+  {
+    id: 4
+    name: 'Settlers of Catan',
+    rating: 7
+  }
+}
+
+------
+
+import { Action } from '@ngrx/store';
+
+import { IBoardGame } from '../../interfaces/board-game.interface';
+
+export const ADD_BOARDGAME = '[GAMES] Add BoardGame';
+
+export class AddBoardGame implements Action {
+  readonly type = ADD_BOARDGAME;
+  constructor(public payload: IBoardGame) {}
+}
+
+export class RemoveBoardGame implements Action {
+  readonly type = REMOVE_BOARDGAME;
+  constructor(public payload: IBoardGame) {}
+}
+
+// Union Type
+export type BoardGameAction =
+  AddBoardGame |
+  RemoveBoardGame;
+
+  --------------------------------------
+import { IBoardGame } from '../../interfaces/board-game.interface';
+import { Injectable } from '@angular/core';
+  
+import { Effect, Actions } from '@ngrx/effects';
+import { of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
+  
+import { SAVE_BOARDGAME, SaveBoardGameError, SaveBoardGameSuccess} from '../actions/board-game.actions';
+  
+import { APIService } from '../../services/api.service';
+  
+@Injectable()
+
+export class BoardGameEffects {
+  constructor(
+    private actions$: Actions,
+    private apiService: APIService
+  ) {}
+
+  @Effect()
+  saveBoardGame$ = this.actions$.ofType(SAVE_BOARDGAME).pipe(
+    map((action: AddBoardGame) => action.payload),
+    switchMap((giftCard) => {
+      return this.apiService
+        .saveBoardGame(giftCard)
+        .pipe(
+          map(savedBoardGames => new SaveBoardGameSuccess(savedBoardGames)),
+          catchError(error => of(new SaveBoardGameError(error)))
+        );
+    })
+  );
+}
+
+---------------------
+
+
+function boardGameReducer(state = initialState, action) { 
+  switch (action.type) { 
+    case ADD_BOARDGAME:
+      // Add a game to the store
+      …
+      return newState;
+    
+    case REMOVE_BOARDGAME:
+    // Remove a game from the store
+      …
+      return newState;
+    
+    case SAVE_BOARDGAME:
+    // Save a game's properties
+      …
+      return newState;
+      
+    case SAVE_BOARDGAME_SUCCESS:
+      …
+      return newState;
+
+    case SAVE_BOARDGAME_ERROR:
+      …
+      return newState;
+
+    default:
+      return state;
+    }
+}
+
+--------------------
+
+// In the Root Reducer
+	
+export const boardGamesState = 
+  createFeatureSelector<IRootState, IBoardGameState>('boardGames');
+
+// In the Board Game Reducer
+
+export const boardGamesAll = 
+  (state: IBoardGameState): IBoardGame[] => state.inventory;
+
+
+// In the Selector
+
+export const getBoardGamesState = createSelector(
+  boardGamesState
+);
+
+export const getBoardGames = createSelector(
+  boardGamesState,
+  boardGamesAll
+);
+
+
+
+// In the Container
+
+import { getBoardGames } from '../store/selectors/board-game.selector';
+
+… 
+
+export class BoardGamesContainerComponent implements OnInit {
+  boardGames$: Observable<IBoardGame[]>;
+  
+  constructor(private store: Store<IRootState>) {}
+  
+  ngOnInit() {
+    this.boardGames$ = this.store.select(getBoardGames);
+  }
+}
+
+------------
+
+Basic Action
+	
+{
+  type: ADD_BOARDGAME,
+  payload: {
+    text: 'Do something.'  
+  }
+}
+
+Action with an Error
+{
+  type: ADD_BOARDGAME,
+  payload: new Error(),
+  error: true
+}
+
+--------------
+
+board_games: {
+	inventory: [
+		{id: 1, name: 'Azul', rating: 9},
+		{id: 2, name: 'Monopoly', rating:5},
+    {id: 3, name: 'Pandemic', rating: 8}
+	],
+	selected: [{id: 1, name: 'Azul', rating: 9}],
+	submitted: [
+		{id: 2, name: 'Monopoly', rating:5}, 
+		{id: 3, name: 'Pandemic', rating: 8}
+	],
+	loaded: true,
+	updating: false
+	
+}
+-----
+
+export interface IBoardGameState {
+	entities: { [id: string]: IBoardGame };
+	ids: string[];
+	selected: string[];
+	submitted: string[];
+	loaded: boolean;
+	updating: boolean;
+}
+
+------
+
+board_games: {
+	entities: {
+		1: {id: 1, name: 'Azul', rating: 9},
+		2: {id: 2, name: 'Monopoly', rating:5},
+		3: {id: 3, name: 'Pandemic', rating: 8}
+	},
+	ids:[1, 2, 3],
+	selected: [1],
+	submitted: [2, 3],
+	loaded: true,
+	updating: false
+	
+}
+
+-----------
+
+state.entities[id]
+
+-----------
+
+case ADD_BOARDGAME: {
+	
+  const boardGame = action.payload;
+  const entities = {
+    ...state.entities,
+    [boardGame.id]: boardGame,
+  };
+
+  return {
+    ...state,
+    entities,
+    ids: [...state.ids, action.payload.id],
+    updating: false
+  };
+}
+
+case REMOVE_BOARDGAME: {
+	const boardGame = action.payload;
+	const { [boardGame.id]: removed, ...entitiesLeft } = state.entities;
+
+	return {
+		...state,
+		entities: entitiesLeft,
+		ids: state.ids.filter(id => id !== boardGame.id),
+		selected: state.selected.filter(id => id !== boardGame.id),
+		submitted: state.selected.filter(id => id !== boardGame.id),
+		updating: false
+	};
+}
+
+----------------
+
+case LOAD_BOARDGAMES_SUCCESS: {
+
+  const boardGames = action.payload;
+    let ids = [];
+    const entities = boardGames.reduce(
+      (processedEntities: { [id: string]: IBoardGame }, boardGame: IBoardGame) => {
+        ids = [...ids, boardGame.id];
+        return {
+          ...processedEntities,
+          [boardGame.id]: boardGame
+        };
+      },
+      {...state.entities}
+    );
+    
+  return {
+    ...state,
+    entities,
+    ids,
+    loaded: true,
+    updating: false
+    };
+}
+
+------------------------
+
+// Add multiple items to an array
+case SUBMIT_BOARDGAMES_SUCCESS: {
+  const ids = action.payload.map(boardGame => boardGame.id);
+  
+  return {
+      ...state,
+      selected: [],
+      submitted: [...state.submitted, ...ids],
+      loaded: true,
+      updating: false
+    };
+}
+
+
+----------------------
+
+
+
+case ADD_BOARDGAME: {
+	return {
+		...state,
+		inventory: [...state.inventory, action.payload]
+	};
+}
+
+--------------------------------------------
+
+export const getBoardGameState = 
+  createFeatureSelector<IRootState>('boardGames');
+
+export const getAllBoardGames = 
+  createSelector(
+    getBoardGameState,
+    (state: IBoardGameState) => state.inventory
+  )
+
+
+// In the container
+  this.store.select(getAllBoardGames);
